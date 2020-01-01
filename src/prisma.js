@@ -52,6 +52,12 @@ const prisma = new Prisma({
 //     })
 
 const createPostForUser = async (authorId, data) => {
+    const userExists = await prisma.exists.User({ id: authorId });
+
+    if (!userExists) {
+        throw new Error('User not found');
+    }
+
     const post = await prisma.mutation.createPost({
         data: {
             ...data,
@@ -61,14 +67,9 @@ const createPostForUser = async (authorId, data) => {
                 }
             }
         }
-    }, '{ id }')
-    const user = await prisma.query.user({
-        where: {
-            id: authorId
-        }
-    }, '{ id name email posts { id title published} }');
+    }, '{ author { id name email posts { id title published }} }')
 
-    return user;
+    return post.author;
 }
 
 // createPostForUser('ck4sh9qqk00kn0795xr6e2s2k', {
@@ -77,26 +78,39 @@ const createPostForUser = async (authorId, data) => {
 //     published: true
 // }).then((user) => {
 //     console.log(JSON.stringify(user, undefined, 2));
+// }).catch((error) => {
+//     console.error('createPostForUser error', error.message);
 // });
 
 const updatePostForUser = async (postId, data) => {
+    const postExists = await prisma.exists.Post({ id: postId });
+
+    if (!postExists) {
+        throw new Error('Post not found');
+    }
+
     const post = await prisma.mutation.updatePost({
         data,
         where: {
             id: postId
         }
-    }, '{ id title body published author { id } }');
-    const user = await prisma.query.user({
-        where: {
-            id: post.author.id
-        }
-    }, '{ id name email posts { id title published} }');
+    }, '{ author { id name email posts { id title published} } }');
 
-    return user;
+    return post.author;
 }
 
 // updatePostForUser('ck4v3qztr017e0795b781obsn', {
 //     published: false
 // }).then((data) => {
 //     console.log('updatePostForUser', data);
+// }).catch((error) => {
+//     console.error('updatePostForUser error', error.message);
+// });
+
+
+// prisma.exists.User({
+//     id: 'ck4sh9qqk00kn0795xr6e2s2k',
+//     name: 'Vikra'
+// }).then((exists) => {
+//     console.log(exists);
 // });
