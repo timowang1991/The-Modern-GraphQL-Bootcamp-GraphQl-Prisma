@@ -2,12 +2,6 @@ import getUserId from '../utils/getUserId';
 
 const Query = {
     users(parents, args, { prisma }, info) {
-        // if (!args.query) {
-        //     return db.users;
-        // }
-        // return db.users.filter((user) => {
-        //     return user.name.toLowerCase().includes(args.query.toLowerCase());
-        // });
         const opArgs = {};
 
         if (args.query) {
