@@ -138,14 +138,40 @@ const Mutation = {
             }
         }, info);
     },
-    deleteComment(parent, args, { prisma }, info) {
+    async deleteComment(parent, args, { prisma, request }, info) {
+        const userId = getUserId(request);
+
+        const commentExists = await prisma.exists.Comment({
+            id: args.id,
+            author: {
+                id: userId
+            }
+        });
+
+        if (!commentExists) {
+            throw new Error('unable to delete comment');
+        }
+
         return prisma.mutation.deleteComment({
             where: {
                 id: args.id
             }
         }, info);
     },
-    updateComment(parent, { id, data }, { prisma }, info) {
+    async updateComment(parent, { id, data }, { prisma, request }, info) {
+        const userId = getUserId(request);
+
+        const commentExists = await prisma.exists.Comment({
+            id: args.id,
+            author: {
+                id: userId
+            }
+        });
+
+        if (!commentExists) {
+            throw new Error('unable to update comment');
+        }
+
         return prisma.mutation.updateComment({
             where: {
                 id
